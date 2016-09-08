@@ -1,7 +1,10 @@
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class FullHome extends DataMap {
+	
+	private LinkedHashMap<String, double[]> flatHome; 
 	
 	public FullHome(int displayRes) {
 		super(displayRes);
@@ -10,6 +13,7 @@ public class FullHome extends DataMap {
 	public static FullHome getEmptyHome(int displayRes) {
 		return new FullHome(displayRes);
 	}
+	
 	
 	public void addDrumHome(String drumName, String data, long pitch, HomeSource sourceType) {
 		
@@ -90,13 +94,18 @@ public class FullHome extends DataMap {
 			}				
 		}
 		
+		// Creates home array for a drum by adding the velocity from the raw Ableton Clip Data
+		// to the home array
 		ArrayList<Note> quantized = Tools.quantize(Notes, getDisplayRes());
 		
 		for (Note note : quantized) {
 			
 			if (note.getPosition() < 4) {
 
-				home[(int) (note.getPosition()/division)] = 1.0;
+				// NOTE: THIS WILL CAUSE A BUG IF variator-port.js IS NOT UPDATED
+				// TO REFLECT THE NEW FUNCTIONALITY
+				home[(int) (note.getPosition()/division)] = 1;
+				
 				
 			}
 			

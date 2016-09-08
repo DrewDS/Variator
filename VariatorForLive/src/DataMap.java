@@ -36,6 +36,18 @@ public class DataMap {
 		
 	}
 	
+	public void addZeroEntry(String name) {
+		
+		double[] emptyData = Tools.createZeroArray(baseResolution);
+		
+		if (data.containsKey(name)) {
+			replaceDrumData(name, emptyData); 
+		} else {
+			addDrumData(name, emptyData);
+		}
+		
+	}
+	
 	
 	private double[] matchDrumResolutionToMap(double[] inputData) {
 		return matchDrumResolution(inputData, baseResolution);

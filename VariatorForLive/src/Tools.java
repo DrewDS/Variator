@@ -350,6 +350,21 @@ public class Tools {
 		
 	}
 		
+	/**
+	 * Creates an array filled with zeroes
+	 * 
+	 * @param length
+	 * @return
+	 */
+	public static double[] createZeroArray(int length) {
+		
+		double[] arr = new double[length];
+		for (int i = 0; i < length; i++) {
+			arr[i] = 0;
+		}
+		return arr;
+		
+	}
 	
 		
 	

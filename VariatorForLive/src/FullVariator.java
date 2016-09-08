@@ -29,8 +29,10 @@ public class FullVariator {
 			
 		} else {
 			
-			if (variators.containsKey(drumName)) { 			
-				variators.get(drumName).setHome(fullHome.getDrumData(drumName, resolution)); 			
+			if (variators.containsKey(drumName)) { 	
+				Variator drumVar = variators.get(drumName);
+				drumVar.setHome(fullHome.getDrumData(drumName, resolution)); 
+				drumVar.setVelocities(velocityMap.getDrumData(drumName, resolution));
 			}	
 		}
 	}
@@ -83,20 +85,18 @@ public class FullVariator {
 			// The drum has no Variator assigned to it
 			} else {
 				
+				// If the drum has no home array assigned to it
 				if (fullHome == null || !fullHome.getData().containsKey(name)) {
 					
-					// The drum has no home array assigned to it
+					// Create an empty FullHome
 					fullHome = FullHome.getEmptyHome(resolution);
 					
-					// Make and array of 0's that is the correct resolution
-					double[] emptyHome = new double[resolution];
-					for (int i = 0; i < resolution; i++) {
-						emptyHome[i] = 0;
-					}
+					// Make an array of 0's that is the correct resolution
+					fullHome.addZeroEntry(name);
 					
 					// And build a Variator from it
 					Variator v = new Variator(fullBasis.getDrumData(name, resolution), 
-											  emptyHome, resolution);
+											  fullHome.getDrumData(name, resolution), resolution);
 					variators.put(name, v);
 				}
 				
@@ -116,7 +116,8 @@ public class FullVariator {
 		}
 	}
 	
-	public void seFullHome(FullHome home) {
+	
+	public void setFullHome(FullHome home) {
 		
 		fullHome = home;
 				

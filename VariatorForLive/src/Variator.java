@@ -3,17 +3,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.lang.Math;
 
 public class Variator {
 
 	
 	private double[] basis;
-	private double[] home;
+	private double[] home;  // is no longer 0 or 1.  Will now contain velocites 0.0 - 1.27
 	private double[] sum;
 	private double[] velocities;
+	private double homeDensity;
 
 	private int resolution;
+	
+	private TieBreakAlgo tieBreakAlgo = TieBreakAlgo.PRIORITIZE_VELOCITY;
 
+	public enum TieBreakAlgo {LEFT_RIGHT, PRIORITIZE_VELOCITY};
+	
 	private String tieBreakChoice = "LEFT";
 	
 	
@@ -26,8 +32,6 @@ public class Variator {
 	private static double[] DEFAULT_HAT_BASIS = {.1,.8,.7,.8,.2,.8,.5,.6};
 	private static double[] DEFAULT_HAT_HOME = {0,1,0,1,0,1,0,1};
 	
-	@SuppressWarnings("unused")
-	private int homeDensity;
 		
 	static int EIGHTH_RESOLUTION = 8;
 	static int DEFAULT_RESOLUTION = 8;
@@ -45,25 +49,31 @@ public class Variator {
 		this.resolution = resolution;
 		this.basis = basis;
 		this.home = home;
-		this.sum = add(this.basis, this.home);
-		homeDensity = getDensity(home);
+		sum = add(this.basis, this.home);
+		velocities = Tools.createZeroArray(resolution);
 		
+	
 	}
 	
 	/** 
 	 * 	Constructor for Variator Object of Default Resolution
+	 * 
+	 *  IN FUTURE DEVELOPMENT TRY TO AVOID USING THIS CONSTRUCTOR AS IT
+	 *  WILL CREATE VARIATIORS THAT ARE OUT OF SYNC WITH A FULL VARIATOR
+	 *  
 	 * @param home
 	 * @param basis
 	 * @param resolution 
 	 */
 	public Variator(double[] home, double[] basis) {
-		this.resolution = DEFAULT_RESOLUTION;
+		resolution = DEFAULT_RESOLUTION;
 		this.basis = basis;
 		this.home = home;
 		this.sum = add(this.basis, this.home);
-		homeDensity = getDensity(home);
+		velocities = Tools.createZeroArray(resolution);
 		
 	}
+
 	
 	
 	////======= STATIC FACTORY METHODS FOR DEFAULT SINGLE DRUM VARIATORS ==========
@@ -127,20 +137,21 @@ public class Variator {
 		//Tools.printArray(hatVariation);
 		 */
 		
-		double[] basis = {.9,.1,.85,.7};
-		double[] home = {1,0,1,0};
-		double[] velocities = {120,40,105,60};
-		Variator v = new Variator(basis, home, 4);
+		double[] basis = {0.99,0,.5,0,.99,0,.5,0};
+		double[] home = {1.2,0,0,.7,1,0,.95,0};
+		double[] velocities = {120,30,100,60,110,40,80,105};
+		Variator v = new Variator(basis, home, 8);
 		v.setVelocities(velocities);
-		double[] variation = v.makeVariation(4, .4);
-		System.out.println(Tools.printArray(variation));
+		for (int i = 0; i < v.getResolution()+1; i++) {
+			double[] variation = v.makeVariation(i,.8);
+			System.out.println(Tools.printArray(variation));
+		}
 
 	}
 	
 	private void updateVariator() {
 		
 		sum = add(basis, home);
-		homeDensity = getDensity(home);
 		
 	}
 	
@@ -174,18 +185,28 @@ public class Variator {
 		return this.sum;
 	}
 	
+	// Adds basis and home, but substitutes the velocity of home for "1"
+	// This grants priority to the basis regardless of home velocity
+	// home velocity is then used for dynamics and tieBreak
 	private double[] add(double[] basis, double[] home) {
 		
 		double[] tempSum = new double[resolution];
+		
 		for (int i = 0; i < resolution; i++) {
 			
-			tempSum[i] = basis[i] + home[i];
+			double hitValue = 0;
+			
+			if (home[i] != 0) {
+				hitValue = 1;
+			}
+			tempSum[i] = basis[i] + hitValue;
 		}
 		
 		//VariatorObject.post("Sum at add() in Variator.java: " + Tools.printArray(tempSum));
 		
 		return tempSum;
 	}
+	
 	
 	private int[] orderIndexes(double[] sum) {
 		
@@ -207,7 +228,7 @@ public class Variator {
 			List<Integer> maxIndexes = findMaxes(track);
 			
 			if (maxIndexes.size() > 1) {
-				int index = tieBreak(maxIndexes);
+				int index = tieBreak(maxIndexes, tieBreakAlgo);
 				indexes.add(index);
 				track[index] = -1;
 	
@@ -252,7 +273,37 @@ public class Variator {
 	}
 	
 	// tieBreak method that alternates choosing left and rightmost index of a tie
-	private int tieBreak(List<Integer> indexes) {
+	private int tieBreak(List<Integer> indexes, TieBreakAlgo algo) {
+		
+		switch(algo) {
+			
+			case LEFT_RIGHT: return tieBreakLR(indexes);
+			case PRIORITIZE_VELOCITY: return tieBreakVel(indexes);
+			
+			default:System.out.println("Default tieBreak method reached");
+					return tieBreakLR(indexes);	
+					
+		}
+		
+			
+	}
+	
+	private int tieBreakVel(List<Integer> indexes) {
+		
+		double maxVel = 0;
+		int maxIndex = 0;
+		for (int i = 0; i < indexes.size(); i++) {
+			int currentIndex = indexes.get(i);
+			if (velocities[currentIndex] > maxVel) {
+				maxIndex = currentIndex;
+				maxVel = velocities[currentIndex];
+			}
+		}
+		return maxIndex;
+		
+	}
+	
+	private int tieBreakLR(List<Integer> indexes) {
 		
 		if (tieBreakChoice == "LEFT") {
 			tieBreakChoice = "RIGHT";
@@ -260,7 +311,7 @@ public class Variator {
 		} else {
 			tieBreakChoice = "LEFT";
 			return indexes.get(indexes.size() - 1);
-		}			
+		}		
 	}
 	
 	
@@ -288,12 +339,29 @@ public class Variator {
 			
 			if (flatVariation[i] == 1) {
 				
-				double newVel = (((velocities[i]/100) - 1) * velocityFactor) + 1;
+				double homeVel = home[i];
+				// Interpolate Velocity for notes not contained in HOME
+				// Uses AVERAGE velocity of home array as "ghost" velocity
+				double avgVel = meanHomeVelocity();
+				if (home[i] == 0) {
+					homeVel = avgVel; 
+				}
+				double newVel = (((velocities[i]/100) - homeVel) * velocityFactor) + homeVel;
 				variation[i] = newVel;
 		
 			}
 		}
 		return variation;		
+	}
+	
+	public double meanHomeVelocity() {
+		double sum = 0;
+		for (int i = 0; i < resolution; i++) {
+			if (home[i] > 0) {
+				sum += home[i];
+			}
+		}
+		return sum/getHomeDensity();
 	}
 	
 	public int getDensity(double[] variation) {
@@ -308,6 +376,16 @@ public class Variator {
 	
 	public int getResolution() {
 		return resolution;
+	}
+	
+	public int getHomeDensity() {
+		int dens = 0;
+		for (int i = 0; i < resolution; i++) {
+			if (home[i] != 0) {
+				dens++;
+			}
+		}
+		return dens;
 	}
 	
 	public void setVelocities(double[] velocities) {
