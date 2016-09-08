@@ -99,7 +99,7 @@ public class Variator {
 		//printArray(kickVariator.getBasis());
 		//printArray(kickVariator.getHome());
 
-		Histogram histo = new Histogram(DEFAULT_RESOLUTION);
+		/*Histogram histo = new Histogram(DEFAULT_RESOLUTION);
 		histo.addFile("Test Loop 1.mid");
 		Tools.printHistogram(histo);
 		histo.addFile("Test Loop 2.mid");
@@ -117,7 +117,7 @@ public class Variator {
 		Tools.printArray(kickVariator.getHome());
 		System.out.print("Kick Basis: " + kickVariator.getBasis().length);
 		Tools.printArray(kickVariator.getBasis());
-		int[] kickVariation = kickVariator.makeVariation(23);
+		double[] kickVariation = kickVariator.makeVariation(23);
 		//int[] snareVariation = snareVariator.makeVariation(3);
 		//
 		//int[] hatVariation = hatVariator.makeVariation(1);
@@ -125,6 +125,15 @@ public class Variator {
 		Tools.printArray(kickVariation);
 		//Tools.printArray(snareVariation);
 		//Tools.printArray(hatVariation);
+		 */
+		
+		double[] basis = {.9,.1,.85,.7};
+		double[] home = {1,0,1,0};
+		double[] velocities = {120,40,105,60};
+		Variator v = new Variator(basis, home, 4);
+		v.setVelocities(velocities);
+		double[] variation = v.makeVariation(4, .4);
+		System.out.println(Tools.printArray(variation));
 
 	}
 	
@@ -173,7 +182,7 @@ public class Variator {
 			tempSum[i] = basis[i] + home[i];
 		}
 		
-		VariatorObject.post("Sum at add() in Variator.java: " + Tools.printArray(tempSum));
+		//VariatorObject.post("Sum at add() in Variator.java: " + Tools.printArray(tempSum));
 		
 		return tempSum;
 	}
@@ -185,7 +194,6 @@ public class Variator {
 		//Accommodate for resolution by "zooming out" track - i.e. less detail
 		double[] track = new double[resolution];
 		int resScale = rawTrack.length / resolution;
-		System.out.println(resScale);
 		for (int i = 0; i < rawTrack.length; i++) {
 			if  (i % resScale == 0) {
 				track[i/resScale] = rawTrack[i];
@@ -256,11 +264,11 @@ public class Variator {
 	}
 	
 	
-	public int[] makeVariation(int density) {
+	public double[] makeVariation(int density) {
 		
 		int[] ordered = orderIndexes(sum);
 				
-		int[] variation = new int[resolution];
+		double[] variation = new double[resolution];
 		
 		int[] notes = Arrays.copyOfRange(ordered, 0, density);
 		
@@ -271,14 +279,22 @@ public class Variator {
 		return variation;
 	}
 	
-	/** INTRODUCE VELOCITY TO VARIATIONS
-	public int[] makeVariation(int density, double velocityFactor) {
+	public double[] makeVariation(int density, double velocityFactor) {
 		
-		int[] flatVariation = makeVariation(density);
+		double[] flatVariation = makeVariation(density);
+		double[] variation = new double[resolution];
 		
+		for (int i = 0; i < resolution; i++) {
+			
+			if (flatVariation[i] == 1) {
+				
+				double newVel = (((velocities[i]/100) - 1) * velocityFactor) + 1;
+				variation[i] = newVel;
 		
-		
-	}*/
+			}
+		}
+		return variation;		
+	}
 	
 	public int getDensity(double[] variation) {
 		int count = 0;
@@ -292,6 +308,10 @@ public class Variator {
 	
 	public int getResolution() {
 		return resolution;
+	}
+	
+	public void setVelocities(double[] velocities) {
+		this.velocities = velocities;
 	}
 	
 	

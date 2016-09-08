@@ -362,7 +362,7 @@ public class Tools {
 		ArrayList<Note> quantized = quantize(notes, 16);
 		
 		double[] home = getHomeFromAbletonClip("Note 72 2.7 .5 110 Note 72 1.2 .1 90", 72, 8);
-		printArray(home);
+		System.out.println(printArray(home));
 		
 		
 	}

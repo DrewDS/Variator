@@ -26,7 +26,7 @@ public class VariatorObject extends MaxObject {
 		if (getInlet() ==  0) {
 			
 			Variator testVariator = Variator.getDefaultKickVariator();
-			int[] testVariation = testVariator.makeVariation(density);
+			double[] testVariation = testVariator.makeVariation(density);
 			Atom[] formatted = formatForJSPort(testVariation, pitch);
 			
 			outlet(1, formatted);
@@ -41,7 +41,7 @@ public class VariatorObject extends MaxObject {
 		post("Variator home: " + Tools.printArray(variator.getHome()));
 		;
 		post("Variator sum: "+ Tools.printArray(variator.getSum()));
-		int[] variation = variator.makeVariation(density);
+		double[] variation = variator.makeVariation(density);
 		Atom[] formatted = formatForJSPort(variation, pitch);
 		
 		outlet(1, formatted);
@@ -93,7 +93,7 @@ public class VariatorObject extends MaxObject {
 		postVariatorInfo(testVariator);
 		
 		
-		int[] testVariation = testVariator.makeVariation(2);
+		double[] testVariation = testVariator.makeVariation(2);
 		Atom[] formatted = formatForJSPort(testVariation, 60);
 		
 		outlet(0, "Bang");
@@ -124,7 +124,7 @@ public class VariatorObject extends MaxObject {
 	}
 	
 	
-	private Atom[] formatForJSPort(int[] variation, double key) {
+	private Atom[] formatForJSPort(double[] variation, double key) {
 		
 		String signature = "writeVariation";
 		
@@ -177,7 +177,7 @@ public class VariatorObject extends MaxObject {
 		}
 		post("Basis: < " + basis + ">");
 		String svar = "";
-		int[] variation = v.makeVariation(2);
+		double[] variation = v.makeVariation(2);
 		for (int i = 0; i < v.getBasis().length; i++) {
 			svar += variation[i] + " ";
 			
