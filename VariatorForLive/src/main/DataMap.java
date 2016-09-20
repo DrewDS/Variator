@@ -1,9 +1,9 @@
+package main;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 public class DataMap {
 	
-	String name;
 	private final int baseResolution = 128;
 	protected int displayRes;
 	protected LinkedHashMap<String, double[]> data; 
@@ -13,6 +13,27 @@ public class DataMap {
 		data = new LinkedHashMap<String, double[]>();
 	}
 	
+	public DataMap(int displayRes, String mapType, String presetName) {
+		
+		this(displayRes);
+		data = PresetReader.getData(mapType, presetName);
+		
+	}
+	
+	// Static method to create DataMap with same keySet as the data field of another DataMap
+	public static DataMap createMatchingConstantDataMap(DataMap dataMap, double constant) {
+		
+		DataMap newMap = new DataMap(dataMap.displayRes);
+		
+		for (String drumName : dataMap.getKeys()) {
+			
+			newMap.addConstantEntry(drumName, constant);
+			
+		}
+		
+		return newMap;
+		
+	}
 	
 	public void addDrumData(String name, double[] drumData) {
 		
@@ -36,9 +57,23 @@ public class DataMap {
 		
 	}
 	
-	public void addZeroEntry(String name) {
+	public void matchKeySet(DataMap dataMap, double defaultConstant) {
 		
-		double[] emptyData = Tools.createZeroArray(baseResolution);
+		for (String drumName : dataMap.getKeys()) {
+			
+			if ( !this.getData().containsKey(drumName) ) {
+				
+				this.addConstantEntry(drumName, defaultConstant);	
+				
+			}
+			
+		}
+		
+	}
+	
+	public void addConstantEntry(String name, double constant) {
+		
+		double[] emptyData = Tools.createConstantArray(baseResolution, constant);
 		
 		if (data.containsKey(name)) {
 			replaceDrumData(name, emptyData); 

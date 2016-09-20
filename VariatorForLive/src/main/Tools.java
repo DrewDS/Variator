@@ -1,3 +1,4 @@
+package main;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ public class Tools {
 	
 	public static final int NOTE_ON = 0x90;
 	public static final int NOTE_OFF = 0x80;
+	public static final double DEFAULT_INTERNAL_VEL = 1;
 	
 	public static void printMidiData(MidiEvent event) {
 		
@@ -351,16 +353,17 @@ public class Tools {
 	}
 		
 	/**
-	 * Creates an array filled with zeroes
+	 * Creates an array filled with a constant value
 	 * 
-	 * @param length
+	 * @param length The length of the array
+	 * @param constant The value which will populate the array
 	 * @return
 	 */
-	public static double[] createZeroArray(int length) {
+	public static double[] createConstantArray(int length, double constant) {
 		
 		double[] arr = new double[length];
 		for (int i = 0; i < length; i++) {
-			arr[i] = 0;
+			arr[i] = constant;
 		}
 		return arr;
 		

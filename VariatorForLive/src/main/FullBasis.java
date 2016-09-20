@@ -1,3 +1,4 @@
+package main;
 import java.util.List;
 
 public class FullBasis extends DataMap{
@@ -6,6 +7,9 @@ public class FullBasis extends DataMap{
 	
 	public FullBasis(int displayRes) {
 		super(displayRes);
+	}
+	public FullBasis(int displayRes, String presetName) {
+		super(displayRes, "basis", presetName);
 	}
 	
 	public void addDrumBasis(String name, double[] drumData) {

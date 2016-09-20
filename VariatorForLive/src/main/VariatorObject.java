@@ -1,3 +1,4 @@
+package main;
 import java.util.ArrayList;
 
 import com.cycling74.max.*;
@@ -16,7 +17,7 @@ public class VariatorObject extends MaxObject {
 	public VariatorObject() {
 		
 		declareIO(3, 3);
-		BasisPresets.init(DISPLAY_RES);
+		//BasisPresets.init(DISPLAY_RES);
 		fullVariator = new FullVariator(DISPLAY_RES);
 		
 	}
@@ -33,7 +34,7 @@ public class VariatorObject extends MaxObject {
 		}
 	}
 	
-	public void makeVariation(int density, String drumName) {
+	public void makeVariation(int density, String drumName, double velocityFactor) {
 		
 		Variator variator = fullVariator.getVariators().get(drumName);
 		post("Variator name: " + drumName);
@@ -41,7 +42,7 @@ public class VariatorObject extends MaxObject {
 		post("Variator home: " + Tools.printArray(variator.getHome()));
 		;
 		post("Variator sum: "+ Tools.printArray(variator.getSum()));
-		double[] variation = variator.makeVariation(density);
+		double[] variation = variator.makeVariation(density, velocityFactor);
 		Atom[] formatted = formatForJSPort(variation, pitch);
 		
 		outlet(1, formatted);
@@ -102,12 +103,10 @@ public class VariatorObject extends MaxObject {
 		
 	}
 	
-	public void setBasis(String basis) {
+	public void setBasis(String basisPresetName) {
 		
-		BasisPresets.getPreset("rock");
-		
-		fullVariator.setBasis(BasisPresets.getPreset("rock"));
-	
+		fullVariator.setFullBasis(basisPresetName);
+
 	}
 	
 	public void getBasisDrums() {
@@ -137,7 +136,8 @@ public class VariatorObject extends MaxObject {
 				
 		for (int i = 0; i < variation.length; i++) {
 			
-			if  (variation[i] == 1) {
+			
+			if  (variation[i] >= 0) {
 				
 				double position = (4 * i) / resolution;
 				// Default duration of 1 smallest resolution unit
@@ -147,7 +147,7 @@ public class VariatorObject extends MaxObject {
 				String data = "Note " + String.valueOf(pitch) + " " +
 							  String.valueOf(position) + " " + 
 							  String.valueOf(duration) + " " +
-							  String.valueOf(DEFAULT_VELOCITY) + " " +
+							  String.valueOf(variation[i]*100) + " " +
 							  String.valueOf(muted) + " ";
 				noteData += data;
 				

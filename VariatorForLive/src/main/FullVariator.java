@@ -1,5 +1,8 @@
+package main;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+
+import javax.tools.Tool;
 
 
 
@@ -10,14 +13,45 @@ public class FullVariator {
 	private VelocityMap velocityMap;
 	private int resolution;
 	
+	private double DEFAULT_HOME_CONSTANT = 0;
+	
+	private LinkedHashMap<String, Variator> variators = new LinkedHashMap<String, Variator>();
+	
 	public FullVariator(int resolution) {
 		this.resolution = resolution;
 		fullBasis = new FullBasis(resolution);
-		fullHome = new FullHome(resolution);
-		velocityMap = new VelocityMap(resolution);
+		//fullHome = new FullHome(resolution);
+		//velocityMap = new VelocityMap(resolution);
 	}
 	
-	private LinkedHashMap<String, Variator> variators = new LinkedHashMap<String, Variator>();
+	public void updateAllVariators() {
+		
+		if (fullBasis == null) {
+			
+			Exception e = new NullPointerException("there is no defined fullBasis to build variators");
+			e.printStackTrace();
+			System.exit(1);
+			
+		} else { // fullBasis is not null
+			
+			if (fullHome == null) {		
+				fullHome = FullHome.getMatchingConstantHome(fullBasis);
+			}
+			if (velocityMap == null) {
+				velocityMap = VelocityMap.getMatchingConstantVelocityMap(fullBasis);
+			}
+			
+			fullHome.matchKeySet(fullBasis, DEFAULT_HOME_CONSTANT);
+			velocityMap.matchKeySet(fullBasis, Tools.DEFAULT_INTERNAL_VEL);		
+			
+		}
+		
+		for (String drumName : fullBasis.getKeys()) {
+			updateVariator(drumName);
+		}
+		
+	}
+
 	
 	public void updateVariator(String drumName) {
 		
@@ -33,7 +67,12 @@ public class FullVariator {
 				Variator drumVar = variators.get(drumName);
 				drumVar.setHome(fullHome.getDrumData(drumName, resolution)); 
 				drumVar.setVelocities(velocityMap.getDrumData(drumName, resolution));
-			}	
+			} else {
+				Variator drumVar = new Variator(fullHome.getDrumData(drumName, resolution),
+												fullBasis.getDrumData(drumName, resolution),
+												resolution);
+				variators.put(drumName, drumVar);
+			}
 		}
 	}
 	
@@ -65,11 +104,23 @@ public class FullVariator {
 		}
 	}
 	
+	
+	public void setFullBasis(FullBasis basis) {	
+		fullBasis = basis;
+		updateAllVariators();
+	}
+	
+	public void setFullBasis(String presetName) {
+		fullBasis = new FullBasis(resolution, presetName);
+		updateAllVariators();
+	}
+	
+	/*
 	/**
 	 * Sets the Basis for the FullVariator and rebuilds Variator map
 	 * 
 	 * @param basis
-	 */
+	 *
 	public void setBasis(FullBasis basis) {
 		
 		fullBasis = basis;
@@ -92,7 +143,7 @@ public class FullVariator {
 					fullHome = FullHome.getEmptyHome(resolution);
 					
 					// Make an array of 0's that is the correct resolution
-					fullHome.addZeroEntry(name);
+					fullHome.addConstantEntry(name, DEFAULT_HOME_CONSTANT);
 					
 					// And build a Variator from it
 					Variator v = new Variator(fullBasis.getDrumData(name, resolution), 
@@ -115,12 +166,27 @@ public class FullVariator {
 			}
 		}
 	}
+	*/
 	
 	
-	public void setFullHome(FullHome home) {
-		
+	public void setFullHome(FullHome home) {	
 		fullHome = home;
-				
+		updateAllVariators();		
+	}
+	
+	public void setFullHome(String presetName) {
+		fullHome = new FullHome(resolution, presetName);
+		updateAllVariators();
+	}
+	
+	public void setVelocityMap(VelocityMap velMap) {	
+		velocityMap = velMap;
+		updateAllVariators();		
+	}
+	
+	public void setVelocityMap(String presetName) {
+		velocityMap = new VelocityMap(resolution, presetName);
+		updateAllVariators();
 	}
 	
 	public FullHome getFullHome() {
@@ -143,6 +209,15 @@ public class FullVariator {
 	
 	public LinkedHashMap<String, Variator> getVariators() {
 		return variators;
+	}
+	
+	public static void main(String[] args) {
+		
+		FullVariator fv = new FullVariator(16);
+		fv.setFullBasis(new FullBasis(16, "rock"));
+		fv.setVelocityMap(new VelocityMap(16, "rock"));
+		System.out.println(Tools.printArray(fv.variators.get("kick").makeVariation(5, .6)));
+		
 	}
 	
 	

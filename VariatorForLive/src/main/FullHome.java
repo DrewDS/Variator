@@ -1,17 +1,40 @@
+package main;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 public class FullHome extends DataMap {
 	
-	private LinkedHashMap<String, double[]> flatHome; 
+	private static double EMPTY_VALUE = 0;
 	
 	public FullHome(int displayRes) {
 		super(displayRes);
 	}
 	
+	public FullHome(int displayRes, String presetName) {
+		super(displayRes, "home", presetName);
+	}
+	
+	/** 
+	 * Safely Construct FullHome from DataMap
+	 *   Created for use with making and map full of 
+	 *   constants with a matching keySet
+	 * 
+	 * @param dataMap
+	 */
+	public FullHome(DataMap dataMap) {
+		super(dataMap.getDisplayRes());
+		this.data = dataMap.getData();
+	}
+	
 	public static FullHome getEmptyHome(int displayRes) {
 		return new FullHome(displayRes);
+	}
+	
+	public static FullHome getMatchingConstantHome(DataMap dataMap) {
+		
+		return new FullHome(createMatchingConstantDataMap(dataMap, EMPTY_VALUE));
+		
 	}
 	
 	

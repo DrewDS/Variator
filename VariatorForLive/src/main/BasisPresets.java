@@ -1,10 +1,11 @@
+package main;
 import java.util.LinkedHashMap;
 
-public class BasisPresets {
+public class BasisPresets extends DataMapPresets{
 	
 	private static LinkedHashMap<String, FullBasis> presets = new LinkedHashMap<String, FullBasis>();
 	
-	private BasisPresets() {}
+	private BasisPresets() {super();}
 	
 	public static FullBasis rock(int displayRes) {
 		FullBasis rock = new FullBasis(displayRes);
@@ -17,7 +18,8 @@ public class BasisPresets {
 		return rock;
 	}
 	
-	public static void init(int displayRes) {
+	@Override
+	public void init(int displayRes) {
 		presets.put("rock", rock(displayRes));
 	}
 	
@@ -30,20 +32,5 @@ public class BasisPresets {
 		
 	}
 	
-	public static FullBasis getPreset(String preset) {
-		
-		if (presets.containsKey(preset)) {
-			
-			return presets.get(preset);
-			
-		} else {
-			
-			Exception e = new Exception("No preset found");
-			e.printStackTrace();
-			return null;
-			
-		}
-		
-	}
 
 }

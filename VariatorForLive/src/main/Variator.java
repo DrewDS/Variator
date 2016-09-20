@@ -1,3 +1,4 @@
+package main;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +51,7 @@ public class Variator {
 		this.basis = basis;
 		this.home = home;
 		sum = add(this.basis, this.home);
-		velocities = Tools.createZeroArray(resolution);
+		velocities = Tools.createConstantArray(resolution, Tools.DEFAULT_INTERNAL_VEL);
 		
 	
 	}
@@ -70,7 +71,7 @@ public class Variator {
 		this.basis = basis;
 		this.home = home;
 		this.sum = add(this.basis, this.home);
-		velocities = Tools.createZeroArray(resolution);
+		velocities = Tools.createConstantArray(resolution, Tools.DEFAULT_INTERNAL_VEL);
 		
 	}
 
@@ -139,7 +140,7 @@ public class Variator {
 		
 		double[] basis = {0.99,0,.5,0,.99,0,.5,0};
 		double[] home = {1.2,0,0,.7,1,0,.95,0};
-		double[] velocities = {120,30,100,60,110,40,80,105};
+		double[] velocities = {1.20,.30,1.00,.60,1.10,.40,.80,1.05};
 		Variator v = new Variator(basis, home, 8);
 		v.setVelocities(velocities);
 		for (int i = 0; i < v.getResolution()+1; i++) {
@@ -346,7 +347,7 @@ public class Variator {
 				if (home[i] == 0) {
 					homeVel = avgVel; 
 				}
-				double newVel = (((velocities[i]/100) - homeVel) * velocityFactor) + homeVel;
+				double newVel = ((velocities[i] - homeVel) * velocityFactor) + homeVel;
 				variation[i] = newVel;
 		
 			}
@@ -355,13 +356,17 @@ public class Variator {
 	}
 	
 	public double meanHomeVelocity() {
-		double sum = 0;
+		double velSum = 0;
 		for (int i = 0; i < resolution; i++) {
 			if (home[i] > 0) {
-				sum += home[i];
+				velSum += home[i];
 			}
 		}
-		return sum/getHomeDensity();
+		// To maintain a reasonable average home velocity
+		if (getHomeDensity() == 0 || velSum == 0) {
+			return Tools.DEFAULT_INTERNAL_VEL;
+		}
+		return velSum/getHomeDensity();
 	}
 	
 	public int getDensity(double[] variation) {
