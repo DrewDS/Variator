@@ -41,8 +41,12 @@ public class DataMap {
 		
 		double[] newBasisData = matchDrumResolutionToMap(drumData);
 		
+		//VariatorObject.post("New Data to add to Drum data for " + name + ": " + Tools.printArray(newBasisData));
+		
 		if (!data.containsKey(name)) {
 			data.put(name, newBasisData);
+		} else {
+			replaceDrumData(name, newBasisData);
 		}
 	}
 	

@@ -40,7 +40,6 @@ public class VariatorObject extends MaxObject {
 		post("Variator name: " + drumName);
 		post("Variator basis: " + Tools.printArray(variator.getBasis()));
 		post("Variator home: " + Tools.printArray(variator.getHome()));
-		;
 		post("Variator sum: "+ Tools.printArray(variator.getSum()));
 		double[] variation = variator.makeVariation(density, velocityFactor);
 		Atom[] formatted = formatForJSPort(variation, pitch);
@@ -109,6 +108,12 @@ public class VariatorObject extends MaxObject {
 
 	}
 	
+	public void setVelocityMap(String presetName) {
+		
+		fullVariator.setVelocityMap(presetName);
+		
+	}
+	
 	public void getBasisDrums() {
 		
 		ArrayList<String> basisDrums = fullVariator.getBasisDrums();
@@ -137,7 +142,7 @@ public class VariatorObject extends MaxObject {
 		for (int i = 0; i < variation.length; i++) {
 			
 			
-			if  (variation[i] >= 0) {
+			if  (variation[i] > 0) {
 				
 				double position = (4 * i) / resolution;
 				// Default duration of 1 smallest resolution unit
@@ -187,7 +192,7 @@ public class VariatorObject extends MaxObject {
 	
 	
 	
-	public void setPitch(long pitch) {
+	public void setPitch(int pitch, String drumName) {
 		this.pitch = pitch;
 	}
 	

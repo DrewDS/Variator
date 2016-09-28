@@ -6,7 +6,7 @@ public class Note {
 	private long key;
 	private double position;
 	private double duration;
-	private long velocity;
+	private double velocity;
 	private DivisionType divisionType;
 	
 	public enum DivisionType {FRACTIONAL, PPQ};
@@ -22,7 +22,7 @@ public class Note {
 	 * @param velocity
 	 * @param divisionType
 	 */
-	public Note(long key, double position, double duration, long velocity, DivisionType divisionType) {
+	public Note(long key, double position, double duration, double velocity, DivisionType divisionType) {
 		this.key = key;
 		this.position = position;
 		this.duration = duration;
@@ -59,7 +59,7 @@ public class Note {
 		return key;
 	}
 
-	public long getVelocity() {
+	public double getVelocity() {
 		return velocity;
 	}
 	

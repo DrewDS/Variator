@@ -13,6 +13,7 @@ public class Variator {
 	private double[] home;  // is no longer 0 or 1.  Will now contain velocites 0.0 - 1.27
 	private double[] sum;
 	private double[] velocities;
+	private int[] orderedIndexes;
 	private double homeDensity;
 
 	private int resolution;
@@ -153,6 +154,7 @@ public class Variator {
 	private void updateVariator() {
 		
 		sum = add(basis, home);
+		orderedIndexes = orderIndexes(sum);
 		
 	}
 	
@@ -186,6 +188,11 @@ public class Variator {
 		return this.sum;
 	}
 	
+	public void setVelocities(double[] velocities) {
+		this.velocities = velocities;
+		updateVariator();
+	}
+	
 	// Adds basis and home, but substitutes the velocity of home for "1"
 	// This grants priority to the basis regardless of home velocity
 	// home velocity is then used for dynamics and tieBreak
@@ -215,6 +222,7 @@ public class Variator {
 		
 		//Accommodate for resolution by "zooming out" track - i.e. less detail
 		double[] track = new double[resolution];
+		System.out.println("sum before ordering indeces: " + Tools.printArray(rawTrack));
 		int resScale = rawTrack.length / resolution;
 		for (int i = 0; i < rawTrack.length; i++) {
 			if  (i % resScale == 0) {
@@ -292,12 +300,17 @@ public class Variator {
 	private int tieBreakVel(List<Integer> indexes) {
 		
 		double maxVel = 0;
-		int maxIndex = 0;
+		int maxIndex = indexes.get(0);
 		for (int i = 0; i < indexes.size(); i++) {
 			int currentIndex = indexes.get(i);
 			if (velocities[currentIndex] > maxVel) {
 				maxIndex = currentIndex;
 				maxVel = velocities[currentIndex];
+			} 
+			// If velocities from Velocity Map are the same for two given indexes
+			//  return the result from the Left/Right Algorithm as the default
+			else if (velocities[currentIndex] == maxVel) {
+				return tieBreakLR(indexes);
 			}
 		}
 		return maxIndex;
@@ -318,7 +331,10 @@ public class Variator {
 	
 	public double[] makeVariation(int density) {
 		
-		int[] ordered = orderIndexes(sum);
+		//int[] ordered = orderIndexes(sum); MOVED MAKING ORDERED INDEXES TO THE updateVaritor() method
+		int[] ordered = orderedIndexes;
+		
+		System.out.println("Ordered Indeces: " + Tools.printArray(ordered));
 				
 		double[] variation = new double[resolution];
 		
@@ -334,6 +350,7 @@ public class Variator {
 	public double[] makeVariation(int density, double velocityFactor) {
 		
 		double[] flatVariation = makeVariation(density);
+
 		double[] variation = new double[resolution];
 		
 		for (int i = 0; i < resolution; i++) {
@@ -341,6 +358,7 @@ public class Variator {
 			if (flatVariation[i] == 1) {
 				
 				double homeVel = home[i];
+				VariatorObject.post("Velocity of Home note at position [" + i + "]: " + homeVel);
 				// Interpolate Velocity for notes not contained in HOME
 				// Uses AVERAGE velocity of home array as "ghost" velocity
 				double avgVel = meanHomeVelocity();
@@ -348,6 +366,7 @@ public class Variator {
 					homeVel = avgVel; 
 				}
 				double newVel = ((velocities[i] - homeVel) * velocityFactor) + homeVel;
+				VariatorObject.post("Velocity of Note at position [" + i + "]: " + newVel);
 				variation[i] = newVel;
 		
 			}
@@ -393,9 +412,7 @@ public class Variator {
 		return dens;
 	}
 	
-	public void setVelocities(double[] velocities) {
-		this.velocities = velocities;
-	}
+
 	
 	
 

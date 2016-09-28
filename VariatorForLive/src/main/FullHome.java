@@ -1,11 +1,14 @@
 package main;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 public class FullHome extends DataMap {
 	
 	private static double EMPTY_VALUE = 0;
+	//private HashMap<String, Integer> pitchMap = new HashMap<String, Integer>();
+
 	
 	public FullHome(int displayRes) {
 		super(displayRes);
@@ -43,6 +46,8 @@ public class FullHome extends DataMap {
 		switch (sourceType) {
 		
 			case ABLETON_CLIP:	addDrumData(drumName, makeDrumHomeFromAbletonClip(data, pitch));
+								//VariatorObject.post("Attempted to add the following home to " + drumName + " in fullHome: " + Tools.printArray(makeDrumHomeFromAbletonClip(data,pitch)));
+								//VariatorObject.post("Home for " + drumName + " after adding to FullHome : " + Tools.printArray(this.getDrumData(drumName)));
 								break;
 			case MIDI_FILE:		addDrumData(drumName, makeDrumHomeFromMidiFile(data, pitch));
 								break;
@@ -108,7 +113,7 @@ public class FullHome extends DataMap {
 			long notePitch = Long.parseLong(properties[0]);
 			double position = Double.parseDouble(properties[1]);
 			double duration = Double.parseDouble(properties[2]);
-			long velocity = Long.parseLong(properties[3]);
+			double velocity = Double.parseDouble(properties[3]);
 			
 			if (notePitch == pitch) {
 				Note note = new Note(notePitch, position, duration, velocity, Note.DivisionType.FRACTIONAL);
@@ -127,15 +132,29 @@ public class FullHome extends DataMap {
 
 				// NOTE: THIS WILL CAUSE A BUG IF variator-port.js IS NOT UPDATED
 				// TO REFLECT THE NEW FUNCTIONALITY
-				home[(int) (note.getPosition()/division)] = 1;
+				VariatorObject.post("Note Velocity: " + note.getVelocity());
+				VariatorObject.post("Divided by 100: " + note.getVelocity()/100);
+				home[(int) (note.getPosition()/division)] = note.getVelocity()/100;
 				
 				
 			}
 			
 		}
 		
+		VariatorObject.post("Home Array to add to FullVariator: " + Tools.printArray(home));
+		
 		return home;
 		
 	}
+	
+	/**
+	public void assocPitch(String drumName, int pitch) {
+		
+		if (pitchMap.containsKey(drumName)) {		
+			pitchMap.replace(drumName, pitch);		
+		} else {
+			pitchMap.put(drumName, pitch);
+		}
+	}**/
 
 }

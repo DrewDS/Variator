@@ -1,5 +1,6 @@
 package main;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import javax.tools.Tool;
@@ -67,10 +68,14 @@ public class FullVariator {
 				Variator drumVar = variators.get(drumName);
 				drumVar.setHome(fullHome.getDrumData(drumName, resolution)); 
 				drumVar.setVelocities(velocityMap.getDrumData(drumName, resolution));
+				//VariatorObject.post("Variator for " + drumName + "exists, ");
+				//VariatorObject.post("and its home is being updated with: " + Tools.printArray(fullHome.getDrumData(drumName, resolution)));
 			} else {
 				Variator drumVar = new Variator(fullHome.getDrumData(drumName, resolution),
 												fullBasis.getDrumData(drumName, resolution),
 												resolution);
+				//VariatorObject.post("Variator for " + drumName + "does not exist, ");
+				//VariatorObject.post("and its home is being updated with: " + Tools.printArray(fullHome.getDrumData(drumName, resolution)));
 				variators.put(drumName, drumVar);
 			}
 		}
@@ -79,8 +84,12 @@ public class FullVariator {
 	public void addDrumHomeFromAbleton(String drumName, String rawData, long pitch, HomeSource sourceType) {
 		
 		fullHome.addDrumHome(drumName, rawData, pitch, HomeSource.ABLETON_CLIP);
+		VariatorObject.post("The home for drum [" + drumName + "] is : " + Tools.printArray(fullHome.getDrumData(drumName)));
 		updateVariator(drumName);
+		VariatorObject.post("And the home for it's variator is: " + Tools.printArray(variators.get(drumName).getHome()));
 	}
+	
+	//public void addDrumHomeFromMidiFile(String drum)
 	
 	public boolean homeSubsetOfBasis() {
 		
@@ -211,12 +220,13 @@ public class FullVariator {
 		return variators;
 	}
 	
+	
 	public static void main(String[] args) {
 		
 		FullVariator fv = new FullVariator(16);
 		fv.setFullBasis(new FullBasis(16, "rock"));
 		fv.setVelocityMap(new VelocityMap(16, "rock"));
-		System.out.println(Tools.printArray(fv.variators.get("kick").makeVariation(5, .6)));
+		System.out.println(Tools.printArray(fv.variators.get("kick").makeVariation(16, 0)));
 		
 	}
 	
