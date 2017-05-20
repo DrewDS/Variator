@@ -9,12 +9,12 @@ public class FullBasis extends DataMap{
 		super(displayRes);
 	}
 	public FullBasis(int displayRes, String presetName) {
-		super(displayRes, "basis", presetName);
+		super(displayRes, "basis", presetName, 0);
+	}
+	public FullBasis(int displayRes, String presetName, int bar) {
+		super(displayRes, "basis", presetName, bar);
 	}
 	
-	public void addDrumBasis(String name, double[] drumData) {
-		addDrumData(name, drumData);
-	}
 	
 	/**
 	 * Creates a basis (for use in a Variator) that represents the 
@@ -48,7 +48,7 @@ public class FullBasis extends DataMap{
 		
 		for (int i = 0; i < rawFrequencies.length; i++) {
 			
-			// The multiplication by *99 in BASIS will cause HOME to be
+			// The multiplication by 0.99 in BASIS will cause HOME to be
 			// prioritized over BASIS
 			basis[i] = (rawFrequencies[i] / maxFreq) * 0.99;
 			
@@ -59,7 +59,7 @@ public class FullBasis extends DataMap{
 
 
 	public static void main(String[] args) {
-		
+		/* TESTERS
 		FullBasis fb1 = new FullBasis(8);
 		double[] kick = {.9,.1,.8,.7};
 		double[] snare = {.1,.4,.1,.6};
@@ -68,6 +68,8 @@ public class FullBasis extends DataMap{
 		DataMap fh = new DataMap(4);
 		double[] kickH = {1,0,0,1,0,0,0,0};
 		double[] snareH = {0,0,1,0,0,0,1,0};
+		
+		FullBasis fb2 = new FullBasis(32, "rock", 0);
 	
 		fb1.addDrumData("kick", kick);
 		fb1.addDrumData("snare", snare);
@@ -75,35 +77,20 @@ public class FullBasis extends DataMap{
 		fh.addDrumData("kick", kickH);
 		fh.addDrumData("snare", snareH);
 		
-		fb1.printData();
+		fb2.printData();
 		
+		double[] kickData = fb2.getDrumData("kick", 8);
+		System.out.println(Tools.printArray(kickData));
+		*/
+		
+		/*
 		fh.printData();
 		fh.setDisplayRes(16);
 		fh.printData();
 		fb1.setDisplayRes(4);
 		fb1.printData();
-		
+		*/
 		
 		
 	}
-	
-	/*
-	private double[] kick;
-	private double[] snare;
-	private double[] clap;
-	private double[] hhOpen;
-	private double[] hhClosed;
-	private double[] tom1;
-	private double[] tom2;
-	private double[] tomFloor;
-	private double[] crash;
-	private double[] ride;
-	private double[] other1;
-	private double[] other2;
-	private double[] other3;
-	private double[] other4;
-	private double[] other5;
-	private double[] other6;
-	*/
-
 }

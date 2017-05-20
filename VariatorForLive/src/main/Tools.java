@@ -1,13 +1,21 @@
 package main;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
 import javax.sound.midi.*;
 
-
+/**
+ * Useful boilerplate for use within this project.
+ * 
+ * @author drewdyer-symonds
+ *
+ */
 public class Tools {
 	
 	public static final int NOTE_ON = 0x90;
@@ -263,6 +271,18 @@ public class Tools {
 		
 	}
 	
+	public static String printArray(ArrayList<Integer> array) {
+		
+		String arr = "< ";
+		for (int i = 0; i < array.size(); i++) {
+			String s = array.get(i) + " ";
+			arr += s;
+		}
+		arr += ">";
+		return arr;
+		
+	}
+	
 	public static String printArray(int[] array) {
 
 		String arr = "< ";
@@ -286,74 +306,23 @@ public class Tools {
 		return arr;
 	}
 	
-	
-	// Maybe Assumes only one BAR?  VERIFY
-	public static double[] getHomeFromMidiFile(String fileName, long key, int resolution) {
-		
-		// Using a Histogram object is due to the pre-built quantizing and midireading functionality
-		Histogram histo = new Histogram(resolution);
-		
-		histo.addFile(fileName);
-		
-		double[] home = new double[histo.getResolution()];
-		
-		List<List<Note>> beats = histo.getEventData().get(key);
-		
-		for (int i = 0; i < beats.size(); i++) {
-			
-			List<Note> pairs = beats.get(i);
-			home[i] = pairs.size();
-			
-		}
-		
-		return home;
-	}
-	
-	// ONLY USES FIRST BAR OF ABLETON CLIP AND ASSUMES 4/4 TIMING
-	public static double[] getHomeFromAbletonClip(String rawString, int key, int resolution) {
-		
-		double division = 4.0/resolution;
+	public static String printArray(String[] array) {
 
-		double[] home = new double[resolution];
-		
-		ArrayList<Note> Notes = new ArrayList<Note>();
-		
-		String[] noteStrings = rawString.split("Note ");
-		
-		// Start at i = 1 because First noteStrings[0] is ""
-		for (int i = 1; i < noteStrings.length; i++) {
-			
-			String[] properties = noteStrings[i].split(" ");
-			
-			long pitch = Long.parseLong(properties[0]);
-			double position = Double.parseDouble(properties[1]);
-			double duration = Double.parseDouble(properties[2]);
-			long velocity = Long.parseLong(properties[3]);
-			
-			Note note = new Note(pitch, position, duration, velocity, Note.DivisionType.FRACTIONAL);
-				
-			Notes.add(note);
-				
+		String arr = "< ";
+		for (int i = 0; i < array.length; i++) {
+			String s = array[i] + " ";
+			arr += s;
 		}
-		
-		ArrayList<Note> quantized = quantize(Notes, resolution);
-		
-		for (Note note : quantized) {
-			
-			if (note.getKey() == key && note.getPosition() < 4) {
-
-				home[(int) (note.getPosition()/division)] = 1.0;
-				
-			}
-			
-		}
-		
-		return home;
-		
+		arr += ">";
+		return arr;
 	}
+
 		
 	/**
-	 * Creates an array filled with a constant value
+	 * Creates an array filled with a constant value.
+	 * 
+	 * Useful over Arrays.fill() because it creates the array in addition
+	 * to populating it.
 	 * 
 	 * @param length The length of the array
 	 * @param constant The value which will populate the array
@@ -362,13 +331,23 @@ public class Tools {
 	public static double[] createConstantArray(int length, double constant) {
 		
 		double[] arr = new double[length];
-		for (int i = 0; i < length; i++) {
-			arr[i] = constant;
-		}
+		Arrays.fill(arr, constant);
 		return arr;
 		
 	}
 	
+	public static boolean isPowerOfTwo(int number) {
+
+		if ((number & (number - 1)) == 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static String getTimeStamp() {
+		return new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+	}
 		
 	
 	public static void main(String[] args) {
@@ -378,9 +357,6 @@ public class Tools {
 		notes.add(note);
 		@SuppressWarnings("unused")
 		ArrayList<Note> quantized = quantize(notes, 16);
-		
-		double[] home = getHomeFromAbletonClip("Note 72 2.7 .5 110 Note 72 1.2 .1 90", 72, 8);
-		System.out.println(printArray(home));
 		
 		
 	}

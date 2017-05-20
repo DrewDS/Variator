@@ -6,6 +6,18 @@ import java.util.List;
 import java.util.Vector;
 import java.lang.Math;
 
+/**
+ * Low Level class to create single-drum, single-bar variations from associated home,
+ * basis, and velocity DataMaps.
+ * 
+ * Primary algorithm is the addition of the constituent DataMaps, followed by the ordering
+ * of indeces.  Density of 'x' in a variation will return populate the first x ordered
+ * indeces of output variation with velocities determined by the velocity map and weighting
+ * factors.
+ * 
+ * @author drewdyer-symonds
+ *
+ */
 public class Variator {
 
 	
@@ -14,26 +26,14 @@ public class Variator {
 	private double[] sum;
 	private double[] velocities;
 	private int[] orderedIndexes;
-	private double homeDensity;
+	private int homeDensity;
 
 	private int resolution;
-	
-	private TieBreakAlgo tieBreakAlgo = TieBreakAlgo.PRIORITIZE_VELOCITY;
 
 	public enum TieBreakAlgo {LEFT_RIGHT, PRIORITIZE_VELOCITY};
-	
+	private TieBreakAlgo tieBreakAlgo = TieBreakAlgo.PRIORITIZE_VELOCITY;
 	private String tieBreakChoice = "LEFT";
-	
-	
-	private static double[] DEFAULT_KICK_BASIS = {0.99,0,.5,0,.99,0,.5,0};
-	private static double[] DEFAULT_KICK_HOME = {1,0,0,1,0,0,0,0};
-	
-	private static double[] DEFAULT_SNARE_BASIS = {0,0,.99,0,.75,0,.99,.5};
-	private static double[] DEFAULT_SNARE_HOME = {0,0,1,0,0,0,1,0};
-	
-	private static double[] DEFAULT_HAT_BASIS = {.1,.8,.7,.8,.2,.8,.5,.6};
-	private static double[] DEFAULT_HAT_HOME = {0,1,0,1,0,1,0,1};
-	
+
 		
 	static int EIGHTH_RESOLUTION = 8;
 	static int DEFAULT_RESOLUTION = 8;
@@ -41,7 +41,8 @@ public class Variator {
 	
 
 	/** 
-	 * 	Constructor for Variator Object
+	 * 	Constructor for single-drum, single-bar Variator 
+	 * 
 	 * @param home
 	 * @param basis
 	 * @param resolution 
@@ -51,110 +52,18 @@ public class Variator {
 		this.resolution = resolution;
 		this.basis = basis;
 		this.home = home;
+		this.homeDensity = countHomeDensity();
 		sum = add(this.basis, this.home);
 		velocities = Tools.createConstantArray(resolution, Tools.DEFAULT_INTERNAL_VEL);
 		
 	
 	}
 	
-	/** 
-	 * 	Constructor for Variator Object of Default Resolution
-	 * 
-	 *  IN FUTURE DEVELOPMENT TRY TO AVOID USING THIS CONSTRUCTOR AS IT
-	 *  WILL CREATE VARIATIORS THAT ARE OUT OF SYNC WITH A FULL VARIATOR
-	 *  
-	 * @param home
-	 * @param basis
-	 * @param resolution 
-	 */
-	public Variator(double[] home, double[] basis) {
-		resolution = DEFAULT_RESOLUTION;
-		this.basis = basis;
-		this.home = home;
-		this.sum = add(this.basis, this.home);
-		velocities = Tools.createConstantArray(resolution, Tools.DEFAULT_INTERNAL_VEL);
-		
-	}
-
-	
-	
-	////======= STATIC FACTORY METHODS FOR DEFAULT SINGLE DRUM VARIATORS ==========
-	
-	static Variator getDefaultKickVariator() { 
-		
-		return new Variator(DEFAULT_KICK_HOME, DEFAULT_KICK_BASIS, DEFAULT_RESOLUTION);
-		
-	}
-	
-	static Variator getDefaultSnareVariator() { 
-		
-		return new Variator(DEFAULT_SNARE_HOME, DEFAULT_SNARE_BASIS, DEFAULT_RESOLUTION);
-		
-	}
-	
-	static Variator getDefaultHatVariator() { 
-		
-		return new Variator(DEFAULT_HAT_HOME, DEFAULT_HAT_BASIS, DEFAULT_RESOLUTION);
-		
-	}
-	
-	// =============================================================================
-	
-	
-	
-	
-	public static void main(String[] args) {
-		
-		//Variator kickVariator = getDefaultKickVariator();
-		//Variator snareVariator = getDefaultSnareVariator();
-		//Variator hatVariator = getDefaultHatVariator();
-		//printArray(kickVariator.getBasis());
-		//printArray(kickVariator.getHome());
-
-		/*Histogram histo = new Histogram(DEFAULT_RESOLUTION);
-		histo.addFile("Test Loop 1.mid");
-		Tools.printHistogram(histo);
-		histo.addFile("Test Loop 2.mid");
-		Tools.printHistogram(histo);
-		histo.addFile("Test Loop 3.mid");
-		Tools.printHistogram(histo);
-		
-		int kickValue = KeyValues.C_ONE.getValue();
-		FullHome fh = new FullHome(DEFAULT_RESOLUTION);
-		
-		Variator kickVariator = new Variator(fh.makeDrumHomeFromMidiFile("Test Loop 4.mid", kickValue) ,
-				FullBasis.getBasisFromHistogram(histo, kickValue));
-		
-		System.out.print("Kick Home: " + kickVariator.getHome().length);
-		Tools.printArray(kickVariator.getHome());
-		System.out.print("Kick Basis: " + kickVariator.getBasis().length);
-		Tools.printArray(kickVariator.getBasis());
-		double[] kickVariation = kickVariator.makeVariation(23);
-		//int[] snareVariation = snareVariator.makeVariation(3);
-		//
-		//int[] hatVariation = hatVariator.makeVariation(1);
-		
-		Tools.printArray(kickVariation);
-		//Tools.printArray(snareVariation);
-		//Tools.printArray(hatVariation);
-		 */
-		
-		double[] basis = {0.99,0,.5,0,.99,0,.5,0};
-		double[] home = {1.2,0,0,.7,1,0,.95,0};
-		double[] velocities = {1.20,.30,1.00,.60,1.10,.40,.80,1.05};
-		Variator v = new Variator(basis, home, 8);
-		v.setVelocities(velocities);
-		for (int i = 0; i < v.getResolution()+1; i++) {
-			double[] variation = v.makeVariation(i,.8);
-			System.out.println(Tools.printArray(variation));
-		}
-
-	}
-	
 	private void updateVariator() {
 		
 		sum = add(basis, home);
 		orderedIndexes = orderIndexes(sum);
+		homeDensity = countHomeDensity();
 		
 	}
 	
@@ -178,11 +87,7 @@ public class Variator {
 		this.home = home;
 		updateVariator();
 	}
-	
-	public void setHome(String abletonClip, int key) {
-		home = Tools.getHomeFromAbletonClip(abletonClip, key, resolution);
-		updateVariator();
-	}
+
 
 	public double[] getSum() {
 		return this.sum;
@@ -331,7 +236,7 @@ public class Variator {
 	
 	public double[] makeVariation(int density) {
 		
-		//int[] ordered = orderIndexes(sum); MOVED MAKING ORDERED INDEXES TO THE updateVaritor() method
+		//int[] ordered = orderIndexes(sum); MOVED MAKING ORDERED INDEXES TO THE updateVariator() method
 		int[] ordered = orderedIndexes;
 		
 		System.out.println("Ordered Indeces: " + Tools.printArray(ordered));
@@ -347,6 +252,15 @@ public class Variator {
 		return variation;
 	}
 	
+	/**
+	 * Makes a variation array of useful velocities.
+	 * 
+	 * @param density - the number of "hits" to occur in the bar
+	 * @param velocityFactor - the weighting of each hit toward or away from the homeVel
+	 * (A velocityFactor of 0 will return the homeVel for each hit, and 1 will return the 
+	 * correlated velocity from this class's "velocities" field.
+	 * @return
+	 */
 	public double[] makeVariation(int density, double velocityFactor) {
 		
 		double[] flatVariation = makeVariation(density);
@@ -358,7 +272,7 @@ public class Variator {
 			if (flatVariation[i] == 1) {
 				
 				double homeVel = home[i];
-				VariatorObject.post("Velocity of Home note at position [" + i + "]: " + homeVel);
+				//VariatorObject.post("Velocity of Home note at position [" + i + "]: " + homeVel);
 				// Interpolate Velocity for notes not contained in HOME
 				// Uses AVERAGE velocity of home array as "ghost" velocity
 				double avgVel = meanHomeVelocity();
@@ -366,7 +280,7 @@ public class Variator {
 					homeVel = avgVel; 
 				}
 				double newVel = ((velocities[i] - homeVel) * velocityFactor) + homeVel;
-				VariatorObject.post("Velocity of Note at position [" + i + "]: " + newVel);
+				//VariatorObject.post("Velocity of Note at position [" + i + "]: " + newVel);
 				variation[i] = newVel;
 		
 			}
@@ -403,6 +317,10 @@ public class Variator {
 	}
 	
 	public int getHomeDensity() {
+		return homeDensity;
+	}
+	
+	private int countHomeDensity() {
 		int dens = 0;
 		for (int i = 0; i < resolution; i++) {
 			if (home[i] != 0) {
@@ -412,7 +330,69 @@ public class Variator {
 		return dens;
 	}
 	
+	public static void main(String[] args) {
+		
+		//Variator kickVariator = getDefaultKickVariator();
+		//Variator snareVariator = getDefaultSnareVariator();
+		//Variator hatVariator = getDefaultHatVariator();
+		//printArray(kickVariator.getBasis());
+		//printArray(kickVariator.getHome());
 
+		/*Histogram histo = new Histogram(DEFAULT_RESOLUTION);
+		histo.addFile("Test Loop 1.mid");
+		Tools.printHistogram(histo);
+		histo.addFile("Test Loop 2.mid");
+		Tools.printHistogram(histo);
+		histo.addFile("Test Loop 3.mid");
+		Tools.printHistogram(histo);
+		
+		int kickValue = KeyValues.C_ONE.getValue();
+		FullHome fh = new FullHome(DEFAULT_RESOLUTION);
+		
+		Variator kickVariator = new Variator(fh.makeDrumHomeFromMidiFile("Test Loop 4.mid", kickValue) ,
+				FullBasis.getBasisFromHistogram(histo, kickValue));
+		
+		System.out.print("Kick Home: " + kickVariator.getHome().length);
+		Tools.printArray(kickVariator.getHome());
+		System.out.print("Kick Basis: " + kickVariator.getBasis().length);
+		Tools.printArray(kickVariator.getBasis());
+		double[] kickVariation = kickVariator.makeVariation(23);
+		//int[] snareVariation = snareVariator.makeVariation(3);
+		//
+		//int[] hatVariation = hatVariator.makeVariation(1);
+		
+		Tools.printArray(kickVariation);
+		//Tools.printArray(snareVariation);
+		//Tools.printArray(hatVariation);
+		 */
+		
+		double[] basis = {0.99,0,.5,0,.99,0,.5,0};
+		double[] home = {1.2,0,0,.7,1,0,.95,0};
+		double[] velocities = {1.20,.30,1.00,.60,1.10,.40,.80,1.05};
+		Variator v = new Variator(basis, home, 8);
+		v.setVelocities(velocities);
+		for (int i = 0; i < v.getResolution()+1; i++) {
+			double[] variation = v.makeVariation(i,.8);
+			System.out.println(Tools.printArray(variation));
+		}
+		double[] variation = v.makeVariation(3, 0);
+		System.out.println("Variation before right shift: " + Tools.printArray(variation));
+		System.out.println("Total Strength Before: " + BeatStrength.getTotalStrength(variation));
+		System.out.println("Average Strength Before: " + BeatStrength.getAverageStrength(variation));
+		System.out.println("BeatSrength Array: " + Tools.printArray(BeatStrength.buildArray(8)));
+		for (int i = 2; i < 5; i++) {
+			if (variation[i] != 0) {
+				variation[i+1] = variation[i];
+				variation[i] = 0;
+				i++;
+			}
+		}
+		
+		System.out.println("Variation after right shift: " + Tools.printArray(variation));
+		System.out.println("Total Strength: " + BeatStrength.getTotalStrength(variation));
+		System.out.println("Average Strength: " + BeatStrength.getAverageStrength(variation));
+
+	}
 	
 	
 

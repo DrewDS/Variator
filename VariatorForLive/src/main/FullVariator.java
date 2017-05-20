@@ -42,6 +42,7 @@ public class FullVariator {
 				velocityMap = VelocityMap.getMatchingConstantVelocityMap(fullBasis);
 			}
 			
+			// Match the drums to the fullBasis.  If a drum does not exist, use the default (arg 2 of matchKeySet)
 			fullHome.matchKeySet(fullBasis, DEFAULT_HOME_CONSTANT);
 			velocityMap.matchKeySet(fullBasis, Tools.DEFAULT_INTERNAL_VEL);		
 			
@@ -66,8 +67,11 @@ public class FullVariator {
 			
 			if (variators.containsKey(drumName)) { 	
 				Variator drumVar = variators.get(drumName);
+				
+				// THIS IS WHERE RESOLUTION MATCHING OCCURS
 				drumVar.setHome(fullHome.getDrumData(drumName, resolution)); 
 				drumVar.setVelocities(velocityMap.getDrumData(drumName, resolution));
+				
 				//VariatorObject.post("Variator for " + drumName + "exists, ");
 				//VariatorObject.post("and its home is being updated with: " + Tools.printArray(fullHome.getDrumData(drumName, resolution)));
 			} else {
@@ -81,16 +85,17 @@ public class FullVariator {
 		}
 	}
 	
-	public void addDrumHomeFromAbleton(String drumName, String rawData, long pitch, HomeSource sourceType) {
+	public void addDrumHomeFromAbleton(String drumName, String rawData, long pitch, HomeSource sourceType, int barNum) {
 		
-		fullHome.addDrumHome(drumName, rawData, pitch, HomeSource.ABLETON_CLIP);
-		VariatorObject.post("The home for drum [" + drumName + "] is : " + Tools.printArray(fullHome.getDrumData(drumName)));
+		fullHome.addDrumHome(drumName, rawData, pitch, HomeSource.ABLETON_CLIP, barNum);
+		//VariatorObject.post("The home for drum [" + drumName + "] is : " + Tools.printArray(fullHome.getDrumData(drumName)));
 		updateVariator(drumName);
-		VariatorObject.post("And the home for it's variator is: " + Tools.printArray(variators.get(drumName).getHome()));
+		//VariatorObject.post("And the home for it's variator is: " + Tools.printArray(variators.get(drumName).getHome()));
 	}
 	
-	//public void addDrumHomeFromMidiFile(String drum)
 	
+	/* PROBABLY DON'T NEED THIS
+	 * 
 	public boolean homeSubsetOfBasis() {
 		
 		// If fullHome is null, variators can still be built
@@ -111,6 +116,23 @@ public class FullVariator {
 			}
 			return true;
 		}
+	} */
+	
+	/**
+	 * Make a variation by accessing the individual bar variators that exist
+	 * inside a single instance of FullVariator
+	 * 
+	 * @param density
+	 * @param drumName
+	 * @param velocityFactor
+	 * @return
+	 */
+	public double[] makeVariation(int density, String drumName, double velocityFactor) {
+		
+		Variator variator = getVariator(drumName);
+		double[] variation = variator.makeVariation(density, velocityFactor);
+		return variation;
+		
 	}
 	
 	
@@ -123,59 +145,6 @@ public class FullVariator {
 		fullBasis = new FullBasis(resolution, presetName);
 		updateAllVariators();
 	}
-	
-	/*
-	/**
-	 * Sets the Basis for the FullVariator and rebuilds Variator map
-	 * 
-	 * @param basis
-	 *
-	public void setBasis(FullBasis basis) {
-		
-		fullBasis = basis;
-				
-		// Iterate through every drum in FullBasis
-		for (String name : fullBasis.getData().keySet()) {
-			
-			// If the drum already has a Variator assigned to it
-			// replace the basis of that Variator with the new basis		
-			if (variators.containsKey(name)) {
-				variators.get(name).setBasis(fullBasis.getDrumData(name, resolution));
-			
-			// The drum has no Variator assigned to it
-			} else {
-				
-				// If the drum has no home array assigned to it
-				if (fullHome == null || !fullHome.getData().containsKey(name)) {
-					
-					// Create an empty FullHome
-					fullHome = FullHome.getEmptyHome(resolution);
-					
-					// Make an array of 0's that is the correct resolution
-					fullHome.addConstantEntry(name, DEFAULT_HOME_CONSTANT);
-					
-					// And build a Variator from it
-					Variator v = new Variator(fullBasis.getDrumData(name, resolution), 
-											  fullHome.getDrumData(name, resolution), resolution);
-					variators.put(name, v);
-				}
-				
-				// If the drum has a home array already assigned
-				else  {
-					
-					// Make a new variator with the data from FullBasis and FullHome
-					// The getDrumData resolution paramater makes the basis, home, 
-					// and therefore the Variator, the correct resolution
-					Variator v  = new Variator(fullBasis.getDrumData(name, resolution), 
-												fullHome.getDrumData(name, resolution), 
-												resolution);
-					variators.put(name, v);
-			
-				} 
-			}
-		}
-	}
-	*/
 	
 	
 	public void setFullHome(FullHome home) {	
@@ -216,8 +185,12 @@ public class FullVariator {
 		
 	}
 	
-	public LinkedHashMap<String, Variator> getVariators() {
+	public LinkedHashMap<String, Variator> getAllVariators() {
 		return variators;
+	}
+	
+	public Variator getVariator(String drumName) {
+		return getAllVariators().get(drumName);
 	}
 	
 	

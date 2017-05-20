@@ -1,8 +1,7 @@
 package main;
 
 public class VelocityMap extends DataMap {
-	
-	
+		
 	public static double EMPTY_VALUE = 1;
 	
 	public VelocityMap(int displayRes) {
@@ -10,7 +9,11 @@ public class VelocityMap extends DataMap {
 	}
 	
 	public VelocityMap(int displayRes, String presetName) {
-		super(displayRes, "velocity", presetName);
+		super(displayRes, "velocity", presetName, 0);
+	}
+	
+	public VelocityMap(int displayRes, String presetName, int presetBar) {
+		super(displayRes, "veolocity", presetName, presetBar);
 	}
 	
 	public VelocityMap(DataMap dataMap) {

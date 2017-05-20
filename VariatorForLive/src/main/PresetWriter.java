@@ -12,18 +12,39 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class PresetReader {
+/**
+ * 
+ * TODO
+ * This class will serve the purpose
+ * of writing data from sources such as a Basis, Histogram set,
+ * Ableton Clip, or user defined String or Array, into the 
+ * XML File that stores presets.
+ * 
+ * @author drewdyer-symonds
+ *
+ */
+public class PresetWriter {
 
 	private static String PRESET_FILE = "/VariatorPresets.xml";
 	
-	// No Argument for Bar Number returns the preset for bar 0
-	public static LinkedHashMap<String, double[]> getData(String mapType, String targetName) {
-		return getData(mapType, targetName, 0);
-	}
 	
-	public static LinkedHashMap<String, double[]> getData(String mapType, String targetName, int targetBar) {
-		
+	/**
+	 * TODO 
+	 * 
+	 * Write Data from a well-formed string, delineated by commas into a preset
+	 * 
+	 * Some of this verbose loop structure comented-out will be useful in navigating
+	 * the layers of the XML heirarchy.  Be careful, though, becuase it is copied from
+	 * PresetReader.
+	 * 
+	 * @param mapType
+	 * @param presetName
+	 * @param data
+	 */
+	public static void writeData(String mapType, String presetName, String data) {
+		/*
 		LinkedHashMap<String, double[]> data = new LinkedHashMap<String, double[]>();
+		
 		
 		try {
 			
@@ -154,13 +175,7 @@ public class PresetReader {
 			e.printStackTrace();
 		}
 		return data;
-		
-	}
-	
-
-	public static void main(String[] args) {
-		//getData("basis", "rock", 3);
-		System.out.println(Tools.printArray(PresetReader.getData("basis", "rock", 2).get("hhClosed")));
+		*/
 	}
 	
 }

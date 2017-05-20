@@ -18,9 +18,13 @@ public class FullHome extends DataMap {
 		super(displayRes, "home", presetName);
 	}
 	
+	public FullHome(int displayRes, String presetName, int bar) {
+		super(displayRes, "home", presetName, bar);
+	}
+	
 	/** 
 	 * Safely Construct FullHome from DataMap
-	 *   Created for use with making and map full of 
+	 *   Created for use with making a map full of 
 	 *   constants with a matching keySet
 	 * 
 	 * @param dataMap
@@ -30,22 +34,24 @@ public class FullHome extends DataMap {
 		this.data = dataMap.getData();
 	}
 	
-	public static FullHome getEmptyHome(int displayRes) {
-		return new FullHome(displayRes);
-	}
-	
 	public static FullHome getMatchingConstantHome(DataMap dataMap) {
 		
 		return new FullHome(createMatchingConstantDataMap(dataMap, EMPTY_VALUE));
 		
 	}
 	
-	
-	public void addDrumHome(String drumName, String data, long pitch, HomeSource sourceType) {
+	/** 
+	 * Adds data for the drumName from one of two sources.  ABLETON_CLIP is
+	 * most commonly used in this program, but the source could be a MIDI_FILE.
+	 * 
+	 * Other sources may become useful in the future, hence the switch structure.
+	 * 
+	 */
+	public void addDrumHome(String drumName, String data, long pitch, HomeSource sourceType, int barNum) {
 		
 		switch (sourceType) {
 		
-			case ABLETON_CLIP:	addDrumData(drumName, makeDrumHomeFromAbletonClip(data, pitch));
+			case ABLETON_CLIP:	addDrumData(drumName, makeDrumHomeFromAbletonClip(data, pitch, barNum));
 								//VariatorObject.post("Attempted to add the following home to " + drumName + " in fullHome: " + Tools.printArray(makeDrumHomeFromAbletonClip(data,pitch)));
 								//VariatorObject.post("Home for " + drumName + " after adding to FullHome : " + Tools.printArray(this.getDrumData(drumName)));
 								break;
@@ -85,7 +91,7 @@ public class FullHome extends DataMap {
 		return home;
 	}
 	
-	// ONLY USES FIRST BAR OF ABLETON CLIP AND ASSUMES 4/4 TIMING
+	// ASSUMES 4/4 TIMING
 	/**
 	 * Get's a home array from an Ableton Clip 
 	 * Integrates with variator-port.js
@@ -94,7 +100,7 @@ public class FullHome extends DataMap {
 	 * @param pitch
 	 * @return
 	 */
-	public double[] makeDrumHomeFromAbletonClip(String rawString, long pitch) {
+	public double[] makeDrumHomeFromAbletonClip(String rawString, long pitch, int barNum) {
 		
 		double division = 4.0/getDisplayRes();
 
@@ -105,7 +111,7 @@ public class FullHome extends DataMap {
 		String[] noteStrings = rawString.split("Note ");
 		
 		// POSSIBLE RANGE BUG
-		// Start at i = 1 because First noteStrings[0] is ""
+		// Start at i = 1 because noteStrings[0] is ""
 		for (int i = 1; i < noteStrings.length; i++) {
 			
 			String[] properties = noteStrings[i].split(" ");
@@ -128,33 +134,23 @@ public class FullHome extends DataMap {
 		
 		for (Note note : quantized) {
 			
-			if (note.getPosition() < 4) {
+			if (note.getPosition() >= barNum*4 && note.getPosition() < (barNum+1)*4) {
 
-				// NOTE: THIS WILL CAUSE A BUG IF variator-port.js IS NOT UPDATED
-				// TO REFLECT THE NEW FUNCTIONALITY
 				VariatorObject.post("Note Velocity: " + note.getVelocity());
 				VariatorObject.post("Divided by 100: " + note.getVelocity()/100);
-				home[(int) (note.getPosition()/division)] = note.getVelocity()/100;
+				
+				// subtract the number of bars (in ableton fractional quarter notes from the position) and divide by division
+				// to get the index in the home array
+				home[(int) ((note.getPosition()-4*barNum)/division)] = note.getVelocity()/100;
 				
 				
 			}
 			
 		}
 		
-		VariatorObject.post("Home Array to add to FullVariator: " + Tools.printArray(home));
+		//VariatorObject.post("Home Array to add to FullVariator: " + Tools.printArray(home));
 		
-		return home;
-		
+		return home;		
 	}
-	
-	/**
-	public void assocPitch(String drumName, int pitch) {
-		
-		if (pitchMap.containsKey(drumName)) {		
-			pitchMap.replace(drumName, pitch);		
-		} else {
-			pitchMap.put(drumName, pitch);
-		}
-	}**/
 
 }

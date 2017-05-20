@@ -11,7 +11,7 @@ public class Note {
 	
 	public enum DivisionType {FRACTIONAL, PPQ};
 	
-	/** Constructs Note explicityly from the necessary fields
+	/** Constructs Note explicitly from the necessary fields
 	 * 	Because the division type is not known, it must be specified.
 	 * 
 	 *  (Can maybe introduce functionality to infer division type from input)

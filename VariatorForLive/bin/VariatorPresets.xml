@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<presets>
+	<basis>
+		<default>
+			<bar num="0">
+				<kick>.99,.5,.1,.5,.6,.7,.01,.1</kick>
+				<snare>.1,.01,.99,.01,.1,.01,.99,.01</snare>
+				<hhClosed>.99,.8,.89,.8,.99,.8,.89,.85</hhClosed>
+			</bar>
+		</default>
+		<rock>
+			<bar num="0">
+				<kick>.99,.5,.1,.5,.6,.7,.01,.1</kick>
+				<snare>.1,.01,.99,.01,.1,.01,.99,.01</snare>
+				<hhClosed>.99,.8,.89,.8,.99,.8,.89,.85</hhClosed>
+			</bar>
+		</rock>
+	</basis>
+	<velocity>
+		<default>
+			<bar num="0">
+				<kick>.99,.5,.1,.5,.6,.7,.01,.1</kick>
+				<snare>.1,.01,.99,.01,.1,.01,.99,.01</snare>
+				<hhClosed>.99,.8,.89,.8,.99,.8,.89,.85</hhClosed>
+			</bar>
+		</default>
+		<rock>
+			<bar num="0">
+				<kick>1.2,.8,.5,1,1.1,.55,.4,.8</kick>
+				<snare>.4,.3,1.1,.4,.5,.3,1.05,.8</snare>
+				<hhClosed>.9,1,.9,1.1,.8,1,.9,1.1</hhClosed>
+			</bar>
+		</rock>
+	</velocity>
+</presets>
